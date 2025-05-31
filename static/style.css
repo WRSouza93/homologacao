@@ -1,0 +1,68 @@
+/* static/style.css */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.footer {
+    background-color: #f8f9fa; /* Cor de fundo suave do Bootstrap */
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.9em;
+    border-top: 1px solid #e7e7e7;
+}
+
+/* Ajuste a cor da navbar conforme a referência fornecida */
+.navbar-custom {
+    background-color: #002561 !important; /* Cor azul escura da referência */
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: #ffffff !important; /* Texto branco para links e marca */
+}
+
+.navbar-custom .nav-link:hover {
+    color: #dddddd !important; /* Cor mais clara ao passar o mouse */
+}
+
+/* Estilo para indicar campos obrigatórios */
+.required-field label::after {
+    content: " *";
+    color: red;
+    margin-left: 2px; /* Espaço pequeno após o texto */
+}
+
+/* Estilo para colunas de ações em tabelas */
+.actions-col {
+    text-align: center;
+    white-space: nowrap; /* Evita que os botões quebrem linha */
+}
+
+.actions-col .btn {
+    margin: 0 2px; /* Pequena margem entre botões */
+}
+
+/* Estilos adicionais baseados na referência */
+.card-header h5 {
+    margin-bottom: 0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+/* Classes de badge para status, se necessário */
+.badge {
+    vertical-align: middle;
+}
+
+/* Adicione mais estilos conforme necessário, baseando-se nos arquivos fornecidos */

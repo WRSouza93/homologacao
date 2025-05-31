@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro de Fornecedor - Sistema de Homologação{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+    .required-field label::after {
+        content: " *";
+        color: red;
+    }
+    .toggle-switch {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .toggle-switch input {
+        display: none;
+    }
+    .toggle-switch label {
+        display: block;
+        width: 40px;
+        height: 20px;
+        border-radius: 10px;
+        background-color: #ccc;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        position: relative;
+    }
+    .toggle-switch label::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #fff;
+        transition: transform 0.3s ease;
+    }
+    .toggle-switch input:checked + label {
+        background-color: #28a745; /* Bootstrap success color */
+    }
+    .toggle-switch input:checked + label::after {
+        transform: translateX(20px);
+    }
+    .table-documents th, .table-documents td {
+        font-size: 0.9em;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Cadastro de Fornecedor</h2>
+<hr>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Dados do Fornecedor</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-group required-field">
+                <label for="cnpj">CNPJ</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="Digite o CNPJ" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="buscar-cnpj">Buscar Dados</button>
+                    </div>
+                </div>
+                <small class="form-text text-muted">Digite o CNPJ e clique em "Buscar Dados" para preencher automaticamente.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="razao_social">Razão Social</label>
+                <input type="text" class="form-control" id="razao_social" name="razao_social" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="nome_fantasia">Nome Fantasia</label>
+                <input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" class="form-control" id="email" name="email" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="text" class="form-control" id="telefone" name="telefone" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco">Endereço Completo</label>
+                <textarea class="form-control" id="endereco" name="endereco" rows="3" readonly></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 required-field">
+                    <label for="tipo">Tipo</label>
+                    <select class="form-control" id="tipo" name="tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="prestador_servico">Prestador de Serviço</option>
+                        <option value="fornecedor_material">Fornecedor de Materiais</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="status">Status: <span id="status-text">Ativo</span></label>
+                     <div class="toggle-switch">
+                        <input type="checkbox" id="status" name="status" value="True" checked>
+                        <label for="status"></label>
+                    </div>
+                     <small class="form-text text-muted">Indica se o fornecedor está ativo no sistema.</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5>Anexos de Documentos</h5>
+            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalDocumento" id="btnAdicionarDocumento">
+                <i class="fas fa-plus"></i> Adicionar Documento
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-documents">
+                    <thead>
+                        <tr>
+                            <th>Código de Registro</th>
+                            <th>Nome do Arquivo</th>
+                            <th>Tem Validade</th>
+                            <th>Emissão</th>
+                            <th>Validade</th>
+                            <th>Certificado ISO</th>
+                            <th>Órgão Certificador</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaDocumentosBody">
+                        {# Linhas de documentos serão adicionadas aqui via JavaScript ou renderizadas se já existirem #}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+             <small class="form-text text-muted">Anexe certificados, contratos, etc.</small>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Fornecedor</button>
+        <a href="#" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a> {# Ajustar o link de cancelar #}
+    </div>
+</form>
+
+<!-- Modal para Adicionar/Editar Documento -->
+<div class="modal fade" id="modalGerenciarDocumento" tabindex="-1" role="dialog" aria-labelledby="modalGerenciarDocumentoLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalGerenciarDocumentoLabel">Adicionar/Editar Documento</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="formDocumento">
+          <input type="hidden" id="doc_public_id" name="public_id"> {# Campo oculto para o ID do documento (para edição) #}
+
+          <div class="form-group required-field">
+            <label for="doc_codigo_registro">Código de Registro</label>
+            <input type="text" class="form-control" id="doc_codigo_registro" name="codigo_registro" required>
+          </div>
+
+          <div class="form-group">
+             <label>Possui Data de Validade?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_tem_validade" name="tem_validade" value="True">
+                <label for="doc_tem_validade"></label>
+            </div>
+          </div>
+
+          <div id="campos_validade" style="display: none;">
+              <div class="form-row">
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_emissao">Data de Emissão</label>
+                      <input type="date" class="form-control" id="doc_data_emissao" name="data_emissao">
+                  </div>
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_validade">Data de Validade</label>
+                      <input type="date" class="form-control" id="doc_data_validade" name="data_validade">
+                  </div>
+              </div>
+          </div>
+
+          <div class="form-group">
+             <label>É Certificado ISO?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_is_certificado_iso" name="is_certificado_iso" value="True">
+                <label for="doc_is_certificado_iso"></label>
+            </div>
+             <small class="form-text text-muted">Se marcado, exigirá Código, Emissão e Validade.</small>
+          </div>
+
+          <div id="campo_orgao_certificador" class="form-group" style="display: none;">
+              <label for="doc_orgao_certificador" class="required-field">Órgão Certificador</label>
+              <input type="text" class="form-control" id="doc_orgao_certificador" name="orgao_certificador">
+          </div>
+
+          <div class="form-group required-field"> {# TODO: Required apenas para adição, opcional para edição #}
+              <label for="doc_arquivo">Anexar Arquivo</label>
+              <input type="file" class="form-control-file" id="doc_arquivo" name="arquivo" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarDocumento">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<!-- Modal para Adicionar/Editar Documento -->
+<div class="modal fade" id="modalDocumento" tabindex="-1" role="dialog" aria-labelledby="modalDocumentoLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDocumentoLabel">Adicionar/Editar Documento</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="formDocumento">
+          <div class="form-group required-field">
+            <label for="doc_codigo_registro">Código de Registro</label>
+            <input type="text" class="form-control" id="doc_codigo_registro" name="codigo_registro" required>
+          </div>
+
+          <div class="form-group">
+             <label>Possui Data de Validade?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_tem_validade" name="tem_validade" value="True">
+                <label for="doc_tem_validade"></label>
+            </div>
+          </div>
+
+          <div id="campos_validade" style="display: none;">
+              <div class="form-row">
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_emissao">Data de Emissão</label>
+                      <input type="date" class="form-control" id="doc_data_emissao" name="data_emissao">
+                  </div>
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_validade">Data de Validade</label>
+                      <input type="date" class="form-control" id="doc_data_validade" name="data_validade">
+                  </div>
+              </div>
+          </div>
+
+          <div class="form-group">
+             <label>É Certificado ISO?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_is_certificado_iso" name="is_certificado_iso" value="True">
+                <label for="doc_is_certificado_iso"></label>
+            </div>
+             <small class="form-text text-muted">Se marcado, exigirá Código, Emissão e Validade.</small>
+          </div>
+
+          <div id="campo_orgao_certificador" class="form-group" style="display: none;">
+              <label for="doc_orgao_certificador" class="required-field">Órgão Certificador</label>
+              <input type="text" class="form-control" id="doc_orgao_certificador" name="orgao_certificador">
+          </div>
+
+          <div class="form-group required-field">
+              <label for="doc_arquivo">Anexar Arquivo</label>
+              <input type="file" class="form-control-file" id="doc_arquivo" name="arquivo" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarDocumento">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // Variável global para armazenar o ID do documento sendo editado
+    let editingDocumentId = null; 
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cnpjInput = document.getElementById('cnpj');
+    const buscarCnpjButton = document.getElementById('buscar-cnpj');
+    const razaoSocialInput = document.getElementById('razao_social');
+    const nomeFantasiaInput = document.getElementById('nome_fantasia');
+    const emailInput = document.getElementById('email');
+    const telefoneInput = document.getElementById('telefone');
+    const enderecoInput = document.getElementById('endereco');
+    const statusCheckbox = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+
+    // Atualiza o texto do status baseado no checkbox
+    function updateStatusText() {
+        statusText.textContent = statusCheckbox.checked ? 'Ativo' : 'Inativo';
+    }
+    updateStatusText(); // Define o estado inicial
+    statusCheckbox.addEventListener('change', updateStatusText);
+
+    // Lógica para buscar CNPJ
+    if (buscarCnpjButton) {
+        buscarCnpjButton.addEventListener('click', function() {
+            const cnpj = cnpjInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+            if (cnpj.length === 14) {
+                // TODO: Adicionar indicador de carregamento
+                buscarCnpjButton.disabled = true;
+                buscarCnpjButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Buscando...';
+
+                fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            // TODO: Melhorar tratamento de erro da API
+                             throw new Error(`Erro na API: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // TODO: Adicionar tratamento para CNPJ não encontrado
+                        if (data) {
+                            razaoSocialInput.value = data.razao_social || '';
+                            nomeFantasiaInput.value = data.nome_fantasia || '';
+                             // Preencher e-mail e telefone com o que a API fornecer (pode variar ou ser nulo)
+                            emailInput.value = data.email || ''; 
+                            telefoneInput.value = data.ddd_telefone_1 ? `(${data.ddd_telefone_1}) ${data.telefone_1}` : '';
+                            if (data.ddd_telefone_2 && data.telefone_2) {
+                                if (telefoneInput.value) telefoneInput.value += ' / ';
+                                telefoneInput.value += `(${data.ddd_telefone_2}) ${data.telefone_2}`;
+                            }
+                           
+                            // Construir endereço completo
+                            let enderecoCompleto = '';
+                            if (data.tipo_logradouro && data.logradouro) {
+                                enderecoCompleto += `${data.tipo_logradouro} ${data.logradouro}`;
+                                if (data.numero) enderecoCompleto += `, ${data.numero}`;
+                                if (data.complemento) enderecoCompleto += ` - ${data.complemento}`;
+                            }
+                            if (data.bairro) enderecoCompleto += `\n${data.bairro}`;
+                            if (data.municipio && data.uf) enderecoCompleto += `\n${data.municipio} - ${data.uf}`;
+                            if (data.cep) enderecoCompleto += `\nCEP: ${data.cep}`;
+
+                            enderecoInput.value = enderecoCompleto;
+
+                            // TODO: Feedback visual de sucesso
+                        } else {
+                            // TODO: Feedback visual de CNPJ não encontrado
+                             alert("CNPJ não encontrado ou dados incompletos na API.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao buscar CNPJ:", error);
+                        // TODO: Feedback visual de erro
+                         alert("Erro ao buscar dados do CNPJ. Tente novamente.");
+                    })
+                    .finally(() => {
+                         buscarCnpjButton.disabled = false;
+                         buscarCnpjButton.innerHTML = 'Buscar Dados';
+                    });
+            } else {
+                alert("Por favor, digite um CNPJ válido com 14 dígitos.");
+            }
+        });
+    }
+
+    // Lógica para o modal de documentos
+    const docTemValidadeCheckbox = document.getElementById('doc_tem_validade');
+    const camposValidadeDiv = document.getElementById('campos_validade');
+    const btnAdicionarDocumento = document.getElementById('btnAdicionarDocumento');
+    const docIsCertificadoIsoCheckbox = document.getElementById('doc_is_certificado_iso');
+    const campoOrgaoCertificadorDiv = document.getElementById('campo_orgao_certificador');
+    const docDataEmissaoInput = document.getElementById('doc_data_emissao');
+    const docDataValidadeInput = document.getElementById('doc_data_validade');
+    const docOrgaoCertificadorInput = document.getElementById('doc_orgao_certificador');
+    const docArquivoInput = document.getElementById('doc_arquivo');
+    const btnSalvarDocumento = document.getElementById('btnSalvarDocumento');
+    const listaDocumentosBody = document.getElementById('listaDocumentosBody');
+    const modalDocumento = $('#modalGerenciarDocumento'); // Usando jQuery do Bootstrap
+
+    function toggleCamposValidade() {
+        const checked = docTemValidadeCheckbox.checked;
+        camposValidadeDiv.style.display = checked ? 'block' : 'none';
+        docDataEmissaoInput.required = checked;
+        docDataValidadeInput.required = checked;
+    }
+
+    function toggleCampoOrgaoCertificador() {
+         const checked = docIsCertificadoIsoCheckbox.checked;
+         campoOrgaoCertificadorDiv.style.display = checked ? 'block' : 'none';
+         docOrgaoCertificadorInput.required = checked;
+    }
+
+    docTemValidadeCheckbox.addEventListener('change', toggleCamposValidade);
+    docIsCertificadoIsoCheckbox.addEventListener('change', toggleCampoOrgaoCertificador);
+
+    // Lógica para obrigar campos se for certificado ISO
+    docIsCertificadoIsoCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Se for ISO, tem validade é obrigatório e marcado
+            docTemValidadeCheckbox.checked = true;
+            docTemValidadeCheckbox.disabled = true; // Impede desmarcar
+            toggleCamposValidade(); // Mostra campos de data
+             docDataEmissaoInput.required = true;
+             docDataValidadeInput.required = true;
+             docOrgaoCertificadorInput.required = true;
+        } else {
+            docTemValidadeCheckbox.disabled = false; // Habilita de volta
+            // Reverte para o estado baseado apenas em docTemValidadeCheckbox
+            toggleCamposValidade();
+             docDataEmissaoInput.required = docTemValidadeCheckbox.checked;
+             docDataValidadeInput.required = docTemValidadeCheckbox.checked;
+             docOrgaoCertificadorInput.required = false;
+        }
+         toggleCampoOrgaoCertificador(); // Mostra/Esconde órgão certificador
+    });
+    
+    // Inicializa a visibilidade dos campos condicionais ao abrir o modal ou carregar a página
+    toggleCamposValidade();
+    toggleCampoOrgaoCertificador();
+
+    // Limpa o modal ao fechar
+    modalDocumento.on('hidden.bs.modal', function () {
+        $('#formDocumento')[0].reset(); // Reseta o formulário
+        editingDocumentId = null; // Limpa o ID de edição
+        $('#modalGerenciarDocumentoLabel').text('Adicionar Documento'); // Restaura o título
+        btnSalvarDocumento.text('Adicionar'); // Restaura o texto do botão
+        // Garante que campos condicionais estejam com display correto após reset
+        toggleCamposValidade(); 
+        toggleCampoOrgaoCertificador();
+        // Reabilita a checkbox de validade se tiver sido desabilitada pelo ISO
+        docTemValidadeCheckbox.disabled = false;
+         docArquivoInput.required = true; // Torna o arquivo obrigatório para adição
+    });
+
+     // Evento ao clicar no botão Adicionar Documento
+     btnAdicionarDocumento.addEventListener('click', function() {
+         editingDocumentId = null; // Garante que estamos adicionando um novo
+         $('#modalGerenciarDocumentoLabel').text('Adicionar Documento');
+         btnSalvarDocumento.text('Adicionar');
+         docArquivoInput.required = true; // Arquivo é obrigatório ao adicionar
+     });
+
+     // TODO: Lógica de submissão do formulário do modal via AJAX
+     btnSalvarDocumento.addEventListener('click', function() {
+         const formData = new FormData($('#formDocumento')[0]);
+
+         // Adicionar o public_id do fornecedor ao formData se estiver editando um fornecedor existente
+         // ou armazenar documentos temporariamente no frontend se for um novo fornecedor
+
+         // TODO: Validar campos do modal antes de prosseguir
+
+         if (editingDocumentId) {
+             // Lógica de edição (enviar para a rota de edição de documento)
+             // fetch(`/documentos/${editingDocumentId}/editar`, { method: 'POST', body: formData })
+             // .then(...)
+         } else {
+             // Lógica de adição (manipular no frontend por enquanto)
+
+             // TODO: Adicionar validações aqui
+
+             // Exemplo simples de adicionar uma linha na tabela (sem persistência)
+             const newRow = `
+                 <tr>
+                     <td>${formData.get('codigo_registro')}</td>
+                     <td>${formData.get('arquivo').name}</td>
+                     <td>${formData.get('tem_validade') ? 'Sim' : 'Não'}</td>
+                     <td>${formData.get('tem_validade') ? formData.get('data_emissao') : '-'}</td>
+                     <td>${formData.get('tem_validade') ? formData.get('data_validade') : '-'}</td>
+                     <td>${formData.get('is_certificado_iso') ? 'Sim' : 'Não'}</td>
+                     <td>${formData.get('is_certificado_iso') ? formData.get('orgao_certificador') : '-'}</td>
+                     <td class="text-center">
+                         <button type="button" class="btn btn-sm btn-info btn-editar-documento" data-id="${'temp_id_' + Math.random().toString(36).substr(2, 9)}"><i class="fas fa-edit"></i></button> {# Usar um ID temporário para demonstração #}
+                         <button type="button" class="btn btn-sm btn-danger btn-excluir-documento" data-id="${'temp_id_' + Math.random().toString(36).substr(2, 9)}"><i class="fas fa-trash-alt"></i></button>
+                     </td>
+                 </tr>
+             `;
+
+             // Remover a linha "Nenhum documento" se for a primeira adição
+             if (listaDocumentosBody.querySelector('td[colspan="8"]')) {
+                 listaDocumentosBody.innerHTML = '';
+             }
+
+             listaDocumentosBody.insertAdjacentHTML('beforeend', newRow);
+
+             modalDocumento.modal('hide'); // Fecha o modal
+         }
+     });
+
+     // TODO: Lógica para abrir o modal e preencher ao clicar em "Editar" (delegation)
+     // TODO: Lógica para exclusão de documento (delegation)
+
+    // TODO: Implementar lógica para adicionar/editar/excluir documentos na tabela via JS (não PERSISTE ainda, só visual)
+    // TODO: Lógica para enviar dados do formulário principal e anexos.
+});
+</script>
+{% endblock %}

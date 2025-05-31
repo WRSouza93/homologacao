@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Página Inicial - Sistema de Homologação e Inspeção{% endblock %}
+
+{% block content %}
+<div class="jumbotron text-center">
+    <h1 class="display-4">Bem-vindo ao Sistema de Homologação e Inspeção!</h1>
+    <p class="lead">Gerencie seus fornecedores, produtos e processos de inspeção.</p>
+    <hr class="my-4">
+    <p>Comece explorando as opções abaixo:</p>
+    <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('novo_fornecedor') }}" role="button">Cadastrar Novo Fornecedor</a>
+        {# Futuros links para outras partes #}
+        {# <a class="btn btn-secondary btn-lg" href="{{ url_for('listar_fornecedores') }}" role="button">Ver Fornecedores Cadastrados</a> #}
+        {# <a class="btn btn-secondary btn-lg" href="#" role="button">Categorias de Produtos/Serviços</a> #}
+        {# <a class="btn btn-secondary btn-lg" href="#" role="button">Planos de Recebimento</a> #}
+    </p>
+</div>
+{% endblock %}

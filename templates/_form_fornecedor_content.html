@@ -1,5 +1,5 @@
 <form id="formFornecedorModal">
-    <input type="hidden" id="fornecedor_public_id_modal" name="public_id">
+    <input type="hidden" id="fornecedor_public_id_modal" name="public_id" value="{{ fornecedor.public_id if fornecedor else '' }}">
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header bg-white">
             <h5 class="mb-0">Dados do Fornecedor</h5>

@@ -118,78 +118,50 @@ def visualizar_fornecedor(public_id):
 # Nova rota para adicionar documento a um fornecedor existente via AJAX
 @app.route('/fornecedores/<public_id>/adicionar_documento', methods=['POST'])
 def adicionar_documento_fornecedor(public_id):
+    fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
+
     try:
-        print(f"Recebida requisição para adicionar documento ao fornecedor com public_id: {public_id}")
+        codigo_registro = request.form.get('codigo_registro')
+        tem_validade = request.form.get('tem_validade') == 'on'
+        data_emissao = request.form.get('data_emissao') or None
+        data_validade = request.form.get('data_validade') or None
+        is_certificado_iso = request.form.get('is_certificado_iso') == 'on'
+        orgao_certificador = request.form.get('orgao_certificador')
 
-        # 1. Buscar o fornecedor
-        fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
-        print(f"Fornecedor encontrado: {fornecedor.cnpj}")
-
-        # 2. Processar dados do formulário
-        codigo_registro = request.form.get('codigo_registro_modal')
-        tem_validade = request.form.get('tem_validade_modal') == 'True'
-        data_emissao_str = request.form.get('data_emissao_modal')
-        data_validade_str = request.form.get('data_validade_modal')
-        is_certificado_iso = request.form.get('is_certificado_iso_modal') == 'True'
-        orgao_certificador = request.form.get('orgao_certificador_modal')
-
-        # Converter datas para objetos date
-        data_emissao = datetime.strptime(data_emissao_str, '%Y-%m-%d').date() if data_emissao_str else None
-        data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d').date() if data_validade_str else None
-
-        # 3. Processar upload do arquivo
-        arquivo = request.files.get('arquivo_modal')
+        arquivo = request.files.get('arquivo')
         if not arquivo:
             return jsonify({'success': False, 'message': 'Nenhum arquivo foi enviado.'}), 400
 
-        # Gerar nome de arquivo seguro e caminho de destino
-        nome_arquivo_original = secure_filename(arquivo.filename)
-        # Gerar um nome único para evitar conflitos
-        nome_arquivo_salvo = f"{uuid4()}_{nome_arquivo_original}"
-        caminho_destino = os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo_salvo)
+        nome_arquivo = secure_filename(arquivo.filename)
+        caminho_relativo = f"{public_id}/{nome_arquivo}"
+        caminho_absoluto = os.path.join(app.config['UPLOAD_FOLDER'], public_id)
+        os.makedirs(caminho_absoluto, exist_ok=True)
+        arquivo.save(os.path.join(caminho_absoluto, nome_arquivo))
 
-        # Salvar o arquivo
-        arquivo.save(caminho_destino)
-        print(f"Arquivo salvo em: {caminho_destino}")
-
-        # 4. Criar nova instância de DocumentoFornecedor
         novo_documento = DocumentoFornecedor(
             fornecedor=fornecedor,
             codigo_registro=codigo_registro,
             tem_validade=tem_validade,
-            data_emissao=data_emissao,
-            data_validade=data_validade,
+            data_emissao=date.fromisoformat(data_emissao) if data_emissao else None,
+            data_validade=date.fromisoformat(data_validade) if data_validade else None,
             is_certificado_iso=is_certificado_iso,
             orgao_certificador=orgao_certificador,
-            nome_arquivo=nome_arquivo_original, # Armazena o nome original
-            caminho_arquivo=nome_arquivo_salvo # Armazena o nome salvo no servidor
+            nome_arquivo=nome_arquivo,
+            caminho_arquivo=caminho_relativo
         )
 
-        # 5. Adicionar e commitar
         db.session.add(novo_documento)
         db.session.commit()
-        print(f"Documento {novo_documento.public_id} adicionado ao fornecedor {fornecedor.public_id}")
 
-        # 6. Retornar resposta de sucesso (incluindo dados do novo documento)
-        return jsonify({
-            'success': True, 'message': 'Documento adicionado com sucesso!',
-            'documento': {
-                'public_id': novo_documento.public_id,
-                'codigo_registro': novo_documento.codigo_registro,
-                'nome_arquivo': novo_documento.nome_arquivo,
-                'tem_validade': novo_documento.tem_validade,
-                'data_emissao': novo_documento.data_emissao.strftime('%Y-%m-%d') if novo_documento.data_emissao else None,
-                'data_validade': novo_documento.data_validade.strftime('%Y-%m-%d') if novo_documento.data_validade else None,
-                'is_certificado_iso': novo_documento.is_certificado_iso,
-                'orgao_certificador': novo_documento.orgao_certificador,
-                'url_download': novo_documento.url_download # Incluir URL para download/visualização
-            }
-        }), 201 # Retorna status 201 Created
+        return jsonify({'success': True, 'message': 'Documento adicionado com sucesso!', 'documento': {
+            'public_id': novo_documento.public_id,
+            'codigo_registro': novo_documento.codigo_registro,
+            'nome_arquivo': novo_documento.nome_arquivo
+        }})
 
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao adicionar documento: {e}")
-        return jsonify({'success': False, 'message': f'Erro interno ao adicionar documento: {e}'}), 500
+        return jsonify({'success': False, 'message': f'Erro ao salvar documento: {str(e)}'}), 500
 
 def buscar_cnpj(cnpj):
     try:
@@ -227,10 +199,25 @@ def editar_documento(public_id):
     return jsonify({'message': 'Lógica de edição de documento aqui'}), 200
 
 @app.route('/documentos/<public_id>/excluir', methods=['POST'])
+@app.route('/documentos/<public_id>/excluir', methods=['POST'])
 def excluir_documento(public_id):
-    # Lógica para excluir documento
-    print(f"Método POST recebido em /documentos/{public_id}/excluir")
-    return jsonify({'message': 'Lógica de exclusão de documento aqui'}), 200
+    try:
+        documento = DocumentoFornecedor.query.filter_by(public_id=public_id).first_or_404()
+
+        # Apagar arquivo físico
+        caminho_absoluto = os.path.join(app.config['UPLOAD_FOLDER'], documento.caminho_arquivo)
+        if os.path.exists(caminho_absoluto):
+            os.remove(caminho_absoluto)
+
+        db.session.delete(documento)
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'Documento excluído com sucesso!'})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Erro ao excluir documento: {str(e)}'}), 500
+
 
 @app.route('/documentos/<public_id>/download', methods=['GET'])
 def download_documento(public_id):

@@ -190,6 +190,8 @@ function initializeFornecedorDocumentos() {
          });
      });
 
+     
+
      // TODO: Lógica para abrir o modal de documento e preencher ao clicar em "Editar" na tabela de documentos
      // Isso usará delegation de evento na listaDocumentosBody
      $(document).on('click', '.btn-editar-documento', function() {
@@ -242,40 +244,31 @@ function initializeFornecedorDocumentos() {
 
      // Lógica para exclusão de documento (delegation)
      $(document).on('click', '.btn-excluir-documento', function() {
-         const documentPublicId = $(this).data('id'); // Assume data-id tem o public_id
+         const documentPublicId = $(this).data('public-id');// Assume data-id tem o public_id
          const row = $(this).closest('tr');
          const documentoNome = row.find('td:eq(1)').text(); // Nome do arquivo ou código
 
          if (confirm(`Tem certeza que deseja excluir o documento "${documentoNome}"?`)) {
-             // TODO: Enviar requisição AJAX POST para a rota de exclusão no backend
-             // fetch(`/documentos/${documentPublicId}/excluir`, { method: 'POST' })
-             // .then(response => response.json())
-             // .then(response => {
-                 // if (response.success) {
-                     // Remover a linha da tabela no frontend
-                     row.remove();
-                     // Se a tabela ficar vazia, mostrar mensagem "Nenhum documento"
-                     if (listaDocumentosBody.children().length === 0) {
-                          listaDocumentosBody.html('<tr><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
-                     }
-                     alert(response.message || 'Documento excluído com sucesso!');
-                 // } else {
-                     // alert('Erro ao excluir documento: ' + (response.message || 'Erro desconhecido'));
-                 // }
-             // })
-             // .catch(error => {
-                 // console.error("Erro AJAX ao excluir documento:", error);
-                 // alert('Erro de comunicação ao excluir documento.');
-             // });
+    $.ajax({
+        url: `/documentos/${documentPublicId}/excluir`,
+        method: 'POST',
+        success: function (response) {
+            if (response.success) {
+                row.remove();
+                if ($('#listaDocumentosBodyModal').children().length === 0) {
+                    $('#listaDocumentosBodyModal').html('<tr><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
+                }
+                alert(response.message || 'Documento excluído com sucesso!');
+            } else {
+                alert('Erro ao excluir documento: ' + (response.message || 'Erro desconhecido'));
+            }
+        },
+        error: function () {
+            alert('Erro de comunicação ao excluir documento.');
+        }
+    });
+}
 
-             // Exemplo de remoção visual imediata para demonstração (NÃO use em produção sem backend)
-              row.remove();
-              if (listaDocumentosBody.children().length === 0) {
-                   listaDocumentosBody.html('<tr><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
-              }
-              alert('Documento excluído (visualmente).'); // Placeholder
-
-         }
      });
 
      // TODO: Função para formatar data de dd/mm/yyyy para yyyy-mm-dd para preencher input type="date" na edição

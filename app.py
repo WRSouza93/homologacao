@@ -67,24 +67,28 @@ class CategoriaProdutoServico(db.Model):
 # Rotas para Categoria de Produtos e Serviços
 @app.route('/categorias', methods=['GET', 'POST'])
 def listar_categorias():
-    # Método GET: Consultar e listar categorias
+ # Método GET: Consultar e listar categorias
     categorias = CategoriaProdutoServico.query.all()
     return render_template('listar_categorias.html', categorias=categorias)
 
-@app.route('/categorias/get_form/', defaults={'public_id': None}, methods=['GET'])
-    categorias = CategoriaProdutoServico.query.all()
-    return render_template('listar_categorias.html', categorias=categorias)
 
 @app.route('/categorias/get_form/<public_id>/', methods=['GET'])
 def get_categoria_form(public_id=None):
+    print(f"Recebida requisição para /categorias/get_form/ com public_id: {public_id}") # Log 1
     try:
         categoria = None
         if public_id:
+            print(f"Buscando categoria com public_id: {public_id}") # Log 2
             categoria = CategoriaProdutoServico.query.filter_by(public_id=public_id).first_or_404()
+            print(f"Categoria encontrada: {categoria is not None}") # Log 3
+
+            print(f"Renderizando template _form_categoria_content.html. Passando categoria: {categoria.nome if categoria else 'None'}") # Log 4
             return render_template('_form_categoria_content.html', categoria=categoria)
     except Exception as e:
-            print(f"Erro na rota /categorias/get_form/: {e}")
-            return redirect(url_for('listar_categorias'))
+            print(f"Erro na rota /categorias/get_form/: {e}") # Log 5
+            return jsonify({'error': f'Erro interno ao carregar formulário: {e}'}), 500
+
+
 
 @app.route('/novo_fornecedor', methods=['GET', 'POST'])
 def novo_fornecedor():

@@ -85,6 +85,7 @@ def listar_fornecedores():
     fornecedores = Fornecedor.query.all()
     return render_template('listar_fornecedores.html', fornecedores=fornecedores)
 
+@app.route('/fornecedores/<public_id>/', methods=['GET', 'POST'])
 # Rota para visualizar/editar um fornecedor existente
 def visualizar_fornecedor(public_id):
     fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()

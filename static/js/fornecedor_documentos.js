@@ -81,7 +81,7 @@ function initializeFornecedorDocumentos() {
 
      // Evento ao clicar no botão Adicionar Documento (dentro do formulário do fornecedor)
      // Usa delegation caso o botão seja adicionado dinamicamente ao DOM
-     $(document).on('click', '#btnAdicionarDocumento', function() {
+     $(document).on('click', '#btnAdicionarDocumentoModal', function() {
          editingDocumentId = null; // Garante que estamos adicionando um novo
          modalDocumento.find('.modal-title').text('Adicionar Documento');
          btnSalvarDocumento.text('Adicionar');

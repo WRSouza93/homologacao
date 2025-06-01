@@ -27,6 +27,7 @@ $(document).ready(function () {
             formUrl = `/fornecedores/get_form/${publicId}/`; // Rota para formulário com dados
         }
 
+ console.log('Carregando formulário de:', action, 'URL:', formUrl); // Debug: Imprime a URL
         // Requisição AJAX para carregar o conteúdo do formulário
         $.ajax({
             url: formUrl,
@@ -53,6 +54,8 @@ $(document).ready(function () {
                 // (Ex: toggle de campos no modal de documentos, busca CNPJ dentro do modal, etc.)
                 // Pode ser necessário chamar uma função de inicialização aqui.
 
+ console.log('Formulário carregado com sucesso.'); // Debug: Sucesso
+ btnSalvar.prop('disabled', false); // Garante que o botão Salvar está habilitado após sucesso
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error("Erro ao carregar formulário do fornecedor:", textStatus, errorThrown, jqXHR.responseText);
@@ -65,7 +68,7 @@ $(document).ready(function () {
     // Evento acionado ao fechar o modal
     modalFornecedor.on('hidden.bs.modal', function () {
         // Limpa o conteúdo do corpo do modal
-        modalBody.html('');
+ modalBody.empty(); // Use empty() para limpar o conteúdo
         modalTitle.text('Título do Modal'); // Restaura título padrão
         btnSalvar.text('Salvar'); // Restaura texto do botão
         btnSalvar.prop('disabled', false); // Habilita o botão

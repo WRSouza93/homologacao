@@ -8,6 +8,8 @@ $(document).ready(function () {
 
     // Evento acionado ao abrir o modal
     modalFornecedor.on('show.bs.modal', function (event) {
+        console.log('Evento show.bs.modal disparado'); // Debug: Evento disparado
+
         const button = $(event.relatedTarget); // Botão que acionou o modal
         const action = button.data('action'); // 'novo' ou 'editar'
         const publicId = button.data('public-id'); // public_id se for edição
@@ -18,11 +20,13 @@ $(document).ready(function () {
 
         let formUrl = '';
         if (action === 'novo') {
+            console.log('Ação: Novo Fornecedor'); // Debug: Ação Novo
             modalTitle.text('Novo Fornecedor');
             btnSalvar.text('Cadastrar');
             formUrl = '/novo_fornecedor'; // Rota para formulário vazio
         } else if (action === 'editar') {
             modalTitle.text('Editar Fornecedor');
+            console.log('Ação: Editar Fornecedor'); // Debug: Ação Editar
             btnSalvar.text('Salvar Alterações');
             formUrl = `/fornecedores/get_form/${publicId}/`; // Rota para formulário com dados
         }

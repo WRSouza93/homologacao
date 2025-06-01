@@ -1,6 +1,6 @@
 <form id="formFornecedorModal">
     <input type="hidden" id="fornecedor_public_id_modal" name="public_id">
-    <div class="card mb-4 border-0">
+    <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header bg-white">
             <h5 class="mb-0">Dados do Fornecedor</h5>
         </div>
@@ -8,7 +8,7 @@
             <div class="form-group required-field">
                 <label for="cnpj_modal">CNPJ</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="cnpj_modal" name="cnpj" placeholder="Digite o CNPJ" required>
+                    <input type="text" class="form-control" id="cnpj_modal" name="cnpj" placeholder="Digite o CNPJ" required value="{{ fornecedor.cnpj if fornecedor else '' }}">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button" id="buscar-cnpj-modal">Buscar Dados</button>
                     </div>
@@ -18,27 +18,27 @@
 
             <div class="form-group">
                 <label for="razao_social_modal">Razão Social</label>
-                <input type="text" class="form-control" id="razao_social_modal" name="razao_social" readonly>
+                <input type="text" class="form-control" id="razao_social_modal" name="razao_social" readonly value="{{ fornecedor.razao_social if fornecedor else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="nome_fantasia_modal">Nome Fantasia</label>
-                <input type="text" class="form-control" id="nome_fantasia_modal" name="nome_fantasia" readonly>
+                <input type="text" class="form-control" id="nome_fantasia_modal" name="nome_fantasia" readonly value="{{ fornecedor.nome_fantasia if fornecedor else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="email_modal">E-mail</label>
-                <input type="email" class="form-control" id="email_modal" name="email" readonly>
+                <input type="email" class="form-control" id="email_modal" name="email" readonly value="{{ fornecedor.email if fornecedor else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="telefone_modal">Telefone</label>
-                <input type="text" class="form-control" id="telefone_modal" name="telefone" readonly>
+                <input type="text" class="form-control" id="telefone_modal" name="telefone" readonly value="{{ fornecedor.telefone if fornecedor else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="endereco_modal">Endereço Completo</label>
-                <textarea class="form-control" id="endereco_modal" name="endereco" rows="3" readonly></textarea>
+                <textarea class="form-control" id="endereco_modal" name="endereco" rows="3" readonly>{{ fornecedor.endereco if fornecedor else '' }}</textarea>
             </div>
 
             <div class="form-row">
@@ -46,13 +46,13 @@
                     <label for="tipo_modal">Tipo</label>
                     <select class="form-control" id="tipo_modal" name="tipo" required>
                         <option value="">Selecione...</option>
-                        <option value="prestador_servico">Prestador de Serviço</option>
-                        <option value="fornecedor_material">Fornecedor de Materiais</option>
+                        <option value="prestador_servico" {% if fornecedor and fornecedor.tipo == 'prestador_servico' %}selected{% endif %}>Prestador de Serviço</option>
+                        <option value="fornecedor_material" {% if fornecedor and fornecedor.tipo == 'fornecedor_material' %}selected{% endif %}>Fornecedor de Materiais</option>
                     </select>
                 </div>
                 <div class="form-group col-md-6">
-                    <label for="status_modal">Status: <span id="status-text-modal">Ativo</span></label>
-                     <div class="toggle-switch">
+                    <label for="status_modal">Status:</label>
+                     <div class="toggle-switch d-inline-block align-middle ml-2">
                         <input type="checkbox" id="status_modal" name="status" value="True" checked>
                         <label for="status_modal"></label>
                     </div>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <div class="card mb-4 border-0">
+    <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Anexos de Documentos</h5>
             <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalGerenciarDocumento" id="btnAdicionarDocumentoModal">
@@ -87,9 +87,29 @@
                     </thead>
                     <tbody id="listaDocumentosBodyModal">
                          {# Documentos serão carregados aqui via JS ao editar ou adicionados via modal #}
+                         {% if fornecedor and fornecedor.documentos %}
+                            {% for documento in fornecedor.documentos %}
+                            <tr>
+                                <td>{{ documento.codigo_registro }}</td>
+                                <td>{{ documento.nome_arquivo }}</td>
+                                <td>{{ 'Sim' if documento.tem_validade else 'Não' }}</td>
+                                <td>{{ documento.data_emissao.strftime('%d/%m/%Y') if documento.data_emissao else '-' }}</td>
+                                <td>{{ documento.data_validade.strftime('%d/%m/%Y') if documento.data_validade else '-' }}</td>
+                                <td>{{ 'Sim' if documento.is_certificado_iso else 'Não' }}</td>
+                                <td>{{ documento.orgao_certificador or '-' }}</td>
+                                <td class="text-center">
+                                    {# Botões de Ação para Documentos (Visualizar, Editar, Excluir) - Lógica JS #}
+                                    <button type="button" class="btn btn-info btn-sm visualizar-documento" data-public-id="{{ documento.public_id }}"><i class="fas fa-eye"></i></button>
+                                    <button type="button" class="btn btn-warning btn-sm editar-documento" data-public-id="{{ documento.public_id }}"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="btn btn-danger btn-sm excluir-documento" data-public-id="{{ documento.public_id }}"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                         {% else %}
                          <tr>
-                            <td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td>
+                            <td colspan="8" class="text-center text-muted no-documents-row">Nenhum documento anexado ainda.</td>
                         </tr>
+                         {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -116,12 +136,12 @@
           <input type="hidden" id="doc_public_id_modal" name="public_id"> {# Campo oculto para o ID do documento (para edição) #}
 
           <div class="form-group required-field">
-            <label for="doc_codigo_registro_modal">Código de Registro</label>
+            <label for="doc_codigo_registro_modal">Código de Registro</label> {# Valor preenchido via JS ao editar documento #}
             <input type="text" class="form-control" id="doc_codigo_registro_modal" name="codigo_registro" required>
           </div>
 
           <div class="form-group">
-             <label>Possui Data de Validade?</label>
+             <label>Possui Data de Validade?</label> {# Checked via JS ao editar documento #}
              <div class="toggle-switch">
                 <input type="checkbox" id="doc_tem_validade_modal" name="tem_validade" value="True">
                 <label for="doc_tem_validade_modal"></label>
@@ -131,15 +151,15 @@
           <div id="campos_validade_modal" style="display: none;">
               <div class="form-row">
                   <div class="form-group col-md-6 required-field">
-                      <label for="doc_data_emissao_modal">Data de Emissão</label>
+                      <label for="doc_data_emissao_modal">Data de Emissão</label> {# Valor preenchido via JS ao editar documento #}
                       <input type="date" class="form-control" id="doc_data_emissao_modal" name="data_emissao">
                   </div>
                   <div class="form-group col-md-6 required-field">
-                      <label for="doc_data_validade_modal">Data de Validade</label>
+                      <label for="doc_data_validade_modal">Data de Validade</label> {# Valor preenchido via JS ao editar documento #}
                       <input type="date" class="form-control" id="doc_data_validade_modal" name="data_validade">
                   </div>
               </div>
-          </div>
+          </div> {# Exibição controlada via JS #}
 
           <div class="form-group">
              <label>É Certificado ISO?</label>
@@ -151,7 +171,7 @@
           </div>
 
           <div id="campo_orgao_certificador_modal" class="form-group" style="display: none;">
-              <label for="doc_orgao_certificador_modal" class="required-field">Órgão Certificador</label>
+              <label for="doc_orgao_certificador_modal" class="required-field">Órgão Certificador</label> {# Valor preenchido via JS ao editar documento #}
               <input type="text" class="form-control" id="doc_orgao_certificador_modal" name="orgao_certificador">
           </div>
 

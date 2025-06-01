@@ -67,27 +67,14 @@ class CategoriaProdutoServico(db.Model):
 # Rotas para Categoria de Produtos e Serviços
 @app.route('/categorias', methods=['GET', 'POST'])
 def listar_categorias():
- if request.method == 'POST':
-    try:
-        nome = request.form['nome']
-        tipo = request.form['tipo']
-
-        if not nome or not tipo:
-            flash('Nome e tipo da categoria são obrigatórios.', 'danger')
-            return redirect(url_for('listar_categorias'))
-
-        nova_categoria = CategoriaProdutoServico(nome=nome, tipo=tipo)
-        db.session.add(nova_categoria)
-        db.session.commit()
-        flash('Categoria adicionada com sucesso!', 'success')
-        return redirect(url_for('listar_categorias'))
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Erro ao adicionar categoria: {e}', 'danger')
-        return redirect(url_for('listar_categorias'))
-
+    # Método GET: Consultar e listar categorias
+    categorias = CategoriaProdutoServico.query.all()
+    return render_template('listar_categorias.html', categorias=categorias)
 
 @app.route('/categorias/get_form/', defaults={'public_id': None}, methods=['GET'])
+    categorias = CategoriaProdutoServico.query.all()
+    return render_template('listar_categorias.html', categorias=categorias)
+
 @app.route('/categorias/get_form/<public_id>/', methods=['GET'])
 def get_categoria_form(public_id=None):
     try:

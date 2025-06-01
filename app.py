@@ -74,17 +74,25 @@ def listar_fornecedores():
 @app.route('/fornecedores/get_form/', defaults={'public_id': None}, methods=['GET'])
 @app.route('/fornecedores/get_form/<public_id>', methods=['GET'])
 def get_fornecedor_form(public_id=None): # Torna public_id explicitamente opcional
-    fornecedor = None
-    if public_id:
-        # Busca o fornecedor se um public_id for fornecido (para edição)
-        fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
+    try:
+        print(f"Recebida requisição para /fornecedores/get_form/ com public_id: {public_id}")
+        fornecedor = None
+        if public_id:
+            print(f"Buscando fornecedor com public_id: {public_id}")
+            # Busca o fornecedor se um public_id for fornecido (para edição)
+            fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
+            print(f"Fornecedor encontrado: {fornecedor is not None}")
 
-    # Renderiza o template parcial do formulário, passando o objeto fornecedor (ou None)
-    # O template _form_fornecedor_content.html usará o objeto fornecedor para preencher os campos se ele existir.
-    return render_template('_form_fornecedor_content.html', fornecedor=fornecedor)
+        print(f"Renderizando template _form_fornecedor_content.html. Passando fornecedor: {fornecedor.cnpj if fornecedor else 'None'}")
+        # Renderiza o template parcial do formulário, passando o objeto fornecedor (ou None)
+        # O template _form_fornecedor_content.html usará o objeto fornecedor para preencher os campos se ele existir.
+        return render_template('_form_fornecedor_content.html', fornecedor=fornecedor)
+    except Exception as e:
+        print(f"Erro na rota /fornecedores/get_form/: {e}")
+        return jsonify({'error': f'Erro interno ao carregar formulário: {e}'}), 500
 
 @app.route('/fornecedores/<public_id>/', methods=['GET', 'POST'])
-# Rota para visualizar/editar um fornecedor existente
+# Rota para visualizar um fornecedor existente (edição agora via modal)
 def visualizar_fornecedor(public_id):
     fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
 

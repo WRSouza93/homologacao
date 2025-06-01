@@ -54,5 +54,32 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
     {% block scripts_extra %}{% endblock %}
+
+    {# Modal genérico para formulário de Fornecedor #}
+    <div class="modal fade" id="modalFornecedor" tabindex="-1" role="dialog" aria-labelledby="modalFornecedorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document"> {# modal-lg para um modal maior #}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalFornecedorLabel">Título do Modal</h5> {# Título dinâmico #}
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalFornecedorBody">
+                    {# Conteúdo do formulário será carregado aqui via AJAX #}
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Carregando...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    {# O botão de Salvar será manipulado via JS, possivelmente adicionado ou modificado pelo conteúdo carregado #}
+                    <button type="button" class="btn btn-primary" id="btnSalvarFornecedorModal">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

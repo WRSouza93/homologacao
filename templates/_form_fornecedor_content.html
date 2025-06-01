@@ -1,0 +1,170 @@
+<form id="formFornecedorModal">
+    <input type="hidden" id="fornecedor_public_id_modal" name="public_id">
+    <div class="card mb-4 border-0">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Dados do Fornecedor</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-group required-field">
+                <label for="cnpj_modal">CNPJ</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="cnpj_modal" name="cnpj" placeholder="Digite o CNPJ" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="buscar-cnpj-modal">Buscar Dados</button>
+                    </div>
+                </div>
+                <small class="form-text text-muted">Digite o CNPJ e clique em "Buscar Dados" para preencher automaticamente.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="razao_social_modal">Razão Social</label>
+                <input type="text" class="form-control" id="razao_social_modal" name="razao_social" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="nome_fantasia_modal">Nome Fantasia</label>
+                <input type="text" class="form-control" id="nome_fantasia_modal" name="nome_fantasia" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="email_modal">E-mail</label>
+                <input type="email" class="form-control" id="email_modal" name="email" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone_modal">Telefone</label>
+                <input type="text" class="form-control" id="telefone_modal" name="telefone" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco_modal">Endereço Completo</label>
+                <textarea class="form-control" id="endereco_modal" name="endereco" rows="3" readonly></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 required-field">
+                    <label for="tipo_modal">Tipo</label>
+                    <select class="form-control" id="tipo_modal" name="tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="prestador_servico">Prestador de Serviço</option>
+                        <option value="fornecedor_material">Fornecedor de Materiais</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="status_modal">Status: <span id="status-text-modal">Ativo</span></label>
+                     <div class="toggle-switch">
+                        <input type="checkbox" id="status_modal" name="status" value="True" checked>
+                        <label for="status_modal"></label>
+                    </div>
+                     <small class="form-text text-muted">Indica se o fornecedor está ativo no sistema.</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card mb-4 border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Anexos de Documentos</h5>
+            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalGerenciarDocumento" id="btnAdicionarDocumentoModal">
+                <i class="fas fa-plus"></i> Adicionar Documento
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-documents">
+                    <thead>
+                        <tr>
+                            <th>Código de Registro</th>
+                            <th>Nome do Arquivo</th>
+                            <th>Tem Validade</th>
+                            <th>Emissão</th>
+                            <th>Validade</th>
+                            <th>Certificado ISO</th>
+                            <th>Órgão Certificador</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaDocumentosBodyModal">
+                         {# Documentos serão carregados aqui via JS ao editar ou adicionados via modal #}
+                         <tr>
+                            <td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+             <small class="form-text text-muted">Anexe certificados, contratos, etc.</small>
+        </div>
+    </div>
+
+    {# Botões de salvar e cancelar estarão no footer do modal principal #}
+</form>
+
+<!-- Modal para Adicionar/Editar Documento - Este modal deve estar na base.html ou na página que contém o modal principal -->
+<!-- Mas sua estrutura HTML é colocada aqui para referência dentro do formulário -->
+<div class="modal fade" id="modalGerenciarDocumento" tabindex="-1" role="dialog" aria-labelledby="modalGerenciarDocumentoLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalGerenciarDocumentoLabel">Adicionar/Editar Documento</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="formDocumentoModal">
+          <input type="hidden" id="doc_public_id_modal" name="public_id"> {# Campo oculto para o ID do documento (para edição) #}
+
+          <div class="form-group required-field">
+            <label for="doc_codigo_registro_modal">Código de Registro</label>
+            <input type="text" class="form-control" id="doc_codigo_registro_modal" name="codigo_registro" required>
+          </div>
+
+          <div class="form-group">
+             <label>Possui Data de Validade?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_tem_validade_modal" name="tem_validade" value="True">
+                <label for="doc_tem_validade_modal"></label>
+            </div>
+          </div>
+
+          <div id="campos_validade_modal" style="display: none;">
+              <div class="form-row">
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_emissao_modal">Data de Emissão</label>
+                      <input type="date" class="form-control" id="doc_data_emissao_modal" name="data_emissao">
+                  </div>
+                  <div class="form-group col-md-6 required-field">
+                      <label for="doc_data_validade_modal">Data de Validade</label>
+                      <input type="date" class="form-control" id="doc_data_validade_modal" name="data_validade">
+                  </div>
+              </div>
+          </div>
+
+          <div class="form-group">
+             <label>É Certificado ISO?</label>
+             <div class="toggle-switch">
+                <input type="checkbox" id="doc_is_certificado_iso_modal" name="is_certificado_iso" value="True">
+                <label for="doc_is_certificado_iso_modal"></label>
+            </div>
+             <small class="form-text text-muted">Se marcado, exigirá Código, Emissão e Validade.</small>
+          </div>
+
+          <div id="campo_orgao_certificador_modal" class="form-group" style="display: none;">
+              <label for="doc_orgao_certificador_modal" class="required-field">Órgão Certificador</label>
+              <input type="text" class="form-control" id="doc_orgao_certificador_modal" name="orgao_certificador">
+          </div>
+
+          <div class="form-group required-field">
+              <label for="doc_arquivo_modal">Anexar Arquivo</label>
+              <input type="file" class="form-control-file" id="doc_arquivo_modal" name="arquivo" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarDocumentoModal">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -7,7 +7,8 @@
     <h2>Detalhes do Fornecedor: {{ fornecedor.nome_fantasia or fornecedor.razao_social }}</h2>
     <div>
         <a href="{{ url_for('listar_fornecedores') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar para Lista</a>
-        {# Futuramente, adicionar botão de editar aqui #}
+        <!-- Botão para entrar no modo de edição -->
+ <button type="button" class="btn btn-primary ml-2" id="btnEditarFornecedor" data-toggle="modal" data-target="#modalFornecedor" data-action="editar" data-public-id="{{ fornecedor.public_id }}"><i class="fas fa-edit"></i> Editar Fornecedor</button>
     </div>
 </div>
 <hr>

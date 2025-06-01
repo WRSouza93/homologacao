@@ -55,6 +55,50 @@ class DocumentoFornecedor(db.Model):
     def url_download(self):
         return url_for('static', filename='uploads/' + self.caminho_arquivo)
 
+class CategoriaProdutoServico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), unique=True, nullable=False)
+    tipo = db.Column(db.String(20), nullable=False) # 'produto' ou 'servico'
+    public_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid4()))
+
+    def __repr__(self):
+        return f"Categoria('{self.nome}', Tipo: '{self.tipo}')"
+
+# Rotas para Categoria de Produtos e Serviços
+@app.route('/categorias', methods=['GET', 'POST'])
+def listar_categorias():
+ if request.method == 'POST':
+    try:
+        nome = request.form['nome']
+        tipo = request.form['tipo']
+
+        if not nome or not tipo:
+            flash('Nome e tipo da categoria são obrigatórios.', 'danger')
+            return redirect(url_for('listar_categorias'))
+
+        nova_categoria = CategoriaProdutoServico(nome=nome, tipo=tipo)
+        db.session.add(nova_categoria)
+        db.session.commit()
+        flash('Categoria adicionada com sucesso!', 'success')
+        return redirect(url_for('listar_categorias'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao adicionar categoria: {e}', 'danger')
+        return redirect(url_for('listar_categorias'))
+
+
+@app.route('/categorias/get_form/', defaults={'public_id': None}, methods=['GET'])
+@app.route('/categorias/get_form/<public_id>/', methods=['GET'])
+def get_categoria_form(public_id=None):
+ try:
+        categoria = None
+ if public_id:
+ categoria = CategoriaProdutoServico.query.filter_by(public_id=public_id).first_or_404()
+ return render_template('_form_categoria_content.html', categoria=categoria)
+ except Exception as e:
+        print(f"Erro na rota /categorias/get_form/: {e}")
+        return redirect(url_for('listar_categorias'))
+
 @app.route('/novo_fornecedor', methods=['GET', 'POST'])
 def novo_fornecedor():
  # No método GET, esta rota agora serve o HTML do formulário parcial para ser carregado via AJAX no modal
@@ -199,7 +243,7 @@ def editar_documento(public_id):
     return jsonify({'message': 'Lógica de edição de documento aqui'}), 200
 
 def excluir_documento(public_id):
-    """Rota para excluir um documento de fornecedor."""
+    """Função para excluir um documento de fornecedor."""
     try:
         documento = DocumentoFornecedor.query.filter_by(public_id=public_id).first_or_404()
         
@@ -214,7 +258,7 @@ def excluir_documento(public_id):
             
         # Excluir registro do banco de dados
         db.session.delete(documento)
-        db.commit()
+        db.session.commit()
         
         return jsonify({'success': True, 'message': 'Documento excluído com sucesso!'})
         

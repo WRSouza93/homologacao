@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Categorias de Produtos e Serviços - Sistema de Homologação{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+<style>
+    /* Estilos específicos para esta página, se necessário */
+    .actions-col {
+        width: 100px; /* Ajuste conforme necessário */
+        text-align: center;
+    }
+    /* Estilos para os controles do DataTable (filtros, paginação) */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Categorias de Produtos e Serviços</h2>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalCategoria" data-action="novo">
+        <i class="fas fa-plus"></i> Nova Categoria
+    </button>
+</div>
+<hr>
+
+
+<div class="card">
+    <div class="card-header">
+        <h5>Categorias Existentes</h5>
+    </div>
+    <div class="card-body">
+        {% if categorias %}
+        <div class="table-responsive">
+            <table id="categoriasTable" class="table table-hover table-striped table-bordered" style="width:100%">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th class="actions-col no-sort">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for categoria in categorias %}
+                    <tr>
+                        <td>{{ categoria.nome }}</td>
+                        <td>{{ categoria.tipo|capitalize }}</td>
+                        <td class="actions-col text-center">
+                            {# Botões de Ação (Editar, Excluir) - Lógica JS #}
+                            <button type="button" class="btn btn-warning btn-sm editar-categoria" title="Editar" data-toggle="modal" data-target="#modalCategoria" data-action="editar" data-public-id="{{ categoria.public_id }}"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" title="Excluir"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhuma categoria cadastrada ainda. Use o formulário acima para adicionar.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Inicializa o DataTable
+        $('#categoriasTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/pt-BR.json" // Configura a linguagem para português
+            },
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]], // Opções de quantidade de linhas por página
+            pageLength: 10, // Quantidade de linhas padrão
+            paging: true, // Habilita paginação
+            lengthChange: true, // Habilita mudança de quantidade de linhas
+            searching: true, // Habilita busca
+            ordering: true, // Habilita ordenação
+            info: true, // Habilita informações de paginação
+            autoWidth: false, // Desabilita auto ajuste de largura das colunas
+            responsive: true, // Tenta ajustar a tabela para telas menores (pode exigir mais CSS)
+            columnDefs: [
+                { orderable: false, targets: 'no-sort' } // Desabilita ordenação na coluna com a classe 'no-sort'
+            ]
+        });
+    });
+</script>
+{% endblock %}

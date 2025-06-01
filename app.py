@@ -64,8 +64,8 @@ class CategoriaProdutoServico(db.Model):
     def __repr__(self):
         return f"Categoria('{self.nome}', Tipo: '{self.tipo}')"
 
-# Rotas para Categoria de Produtos e Serviços
-@app.route('/categorias', methods=['GET', 'POST'])
+# Rotas para Categoria de Produtos e Serviços (GET apenas para listar)
+@app.route('/categorias', methods=['GET'])
 def listar_categorias():
  # Método GET: Consultar e listar categorias
     categorias = CategoriaProdutoServico.query.all()
@@ -88,6 +88,29 @@ def get_categoria_form(public_id=None):
             print(f"Erro na rota /categorias/get_form/: {e}") # Log 5
             return jsonify({'error': f'Erro interno ao carregar formulário: {e}'}), 500
 
+# Nova rota para salvar/editar categoria via AJAX do modal
+@app.route('/categorias/salvar/', defaults={'public_id': None}, methods=['POST'])
+@app.route('/categorias/<public_id>/salvar/', methods=['POST'])
+def salvar_categoria(public_id=None):
+    try:
+        nome = request.form.get('nome')
+        tipo = request.form.get('tipo')
+
+        if public_id:
+            categoria = CategoriaProdutoServico.query.filter_by(public_id=public_id).first_or_404()
+            categoria.nome = nome
+            categoria.tipo = tipo
+            flash('Categoria atualizada com sucesso!', 'success')
+        else:
+            nova_categoria = CategoriaProdutoServico(nome=nome, tipo=tipo)
+            db.session.add(nova_categoria)
+            flash('Categoria adicionada com sucesso!', 'success')
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': flash.get_flashed_messages(with_categories=True)[0][1]}) # Retorna a mensagem flash mais recente
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Erro ao salvar categoria: {str(e)}'}), 500
 
 
 @app.route('/novo_fornecedor', methods=['GET', 'POST'])
@@ -233,6 +256,7 @@ def editar_documento(public_id):
     print(f"Método POST recebido em /documentos/{public_id}/editar")
     return jsonify({'message': 'Lógica de edição de documento aqui'}), 200
 
+@app.route('/documentos/<public_id>/excluir', methods=['POST'])
 def excluir_documento(public_id):
     """Função para excluir um documento de fornecedor."""
     try:

@@ -90,14 +90,14 @@ def listar_categorias():
 @app.route('/categorias/get_form/', defaults={'public_id': None}, methods=['GET'])
 @app.route('/categorias/get_form/<public_id>/', methods=['GET'])
 def get_categoria_form(public_id=None):
- try:
+    try:
         categoria = None
- if public_id:
- categoria = CategoriaProdutoServico.query.filter_by(public_id=public_id).first_or_404()
- return render_template('_form_categoria_content.html', categoria=categoria)
- except Exception as e:
-        print(f"Erro na rota /categorias/get_form/: {e}")
-        return redirect(url_for('listar_categorias'))
+        if public_id:
+            categoria = CategoriaProdutoServico.query.filter_by(public_id=public_id).first_or_404()
+            return render_template('_form_categoria_content.html', categoria=categoria)
+    except Exception as e:
+            print(f"Erro na rota /categorias/get_form/: {e}")
+            return redirect(url_for('listar_categorias'))
 
 @app.route('/novo_fornecedor', methods=['GET', 'POST'])
 def novo_fornecedor():

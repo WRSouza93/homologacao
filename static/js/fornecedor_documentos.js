@@ -244,37 +244,43 @@ function initializeFornecedorDocumentos() {
 
      // Lógica para exclusão de documento (delegation)
      $(document).on('click', '.btn-excluir-documento', function() {
+         console.log('Botão de exclusão de documento clicado.'); // Log adicionado
+
          const documentPublicId = $(this).data('public-id');
          const row = $(this).closest('tr');
          const documentoNome = row.find('td:eq(1)').text(); // Nome do arquivo ou código
 
          if (confirm(`Tem certeza que deseja excluir o documento "${documentoNome}"?`)) {
-    // Enviar requisição AJAX POST para a rota de exclusão no backend
-    const deleteUrl = `/documentos/${documentPublicId}/excluir`;
-    $.ajax({
-        url: deleteUrl,
-        method: 'POST',
-        success: function (response) {
-            if (response.success) {
-                row.remove();
-                // Verifique se a tabela está vazia e adicione a mensagem se necessário
-                const tabelaDocumentosBody = row.closest('tbody'); // Encontre o tbody pai da linha removida
-                if (tabelaDocumentosBody.children('tr:not(.no-documents-row)').length === 0) {
-                     tabelaDocumentosBody.html('<tr class="no-documents-row"><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
-                }
-                alert(response.message || 'Documento excluído com sucesso!');
-            } else {
-                alert('Erro ao excluir documento: ' + (response.message || 'Erro desconhecido'));
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.error("Erro AJAX ao excluir documento:", textStatus, errorThrown, jqXHR.responseText);
-            alert('Erro de comunicação ao excluir documento: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : errorThrown));
-        }
-    });
-}
+             console.log('Exclusão de documento confirmada.'); // Log adicionado após confirmação
 
-}
+             // Enviar requisição AJAX POST para a rota de exclusão no backend
+             const deleteUrl = `/documentos/${documentPublicId}/excluir`;
+             $.ajax({
+                 url: deleteUrl,
+                 method: 'POST',
+                 success: function (response) {
+                     if (response.success) {
+                         row.remove();
+                         // Verifique se a tabela está vazia e adicione a mensagem se necessário
+                         const tabelaDocumentosBody = row.closest('tbody'); // Encontre o tbody pai da linha removida
+                         if (tabelaDocumentosBody.children('tr:not(.no-documents-row)').length === 0) {
+                              tabelaDocumentosBody.html('<tr class="no-documents-row"><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
+                         }
+                         alert(response.message || 'Documento excluído com sucesso!');
+                     } else {
+                         alert('Erro ao excluir documento: ' + (response.message || 'Erro desconhecido'));
+                     }
+                 },
+                 error: function (jqXHR, textStatus, errorThrown) {
+                     console.error("Erro AJAX ao excluir documento:", textStatus, errorThrown, jqXHR.responseText);
+                     alert('Erro de comunicação ao excluir documento: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : errorThrown));
+                 }
+             });
+         } else {
+              console.log('Exclusão de documento cancelada.'); // Log adicionado para cancelamento
+         }
+     });
+
 
 // A função initializeFornecedorDocumentos será chamada do script que carrega o formulário
 // no modal principal (fornecedor_modal.js).

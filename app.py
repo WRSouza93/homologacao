@@ -76,7 +76,7 @@ def novo_fornecedor():
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao cadastrar fornecedor: {e}', 'danger')
-            return render_template('novo_fornecedor.html', form_data=request.form) # Passar dados para preencher o formulário
+            # No modal, a lógica de preencher o formulário em caso de erro precisaria ser tratada no frontend
 
     return render_template('novo_fornecedor.html')
 
@@ -84,6 +84,19 @@ def novo_fornecedor():
 def listar_fornecedores():
     fornecedores = Fornecedor.query.all()
     return render_template('listar_fornecedores.html', fornecedores=fornecedores)
+
+# Nova rota para servir o conteúdo do formulário (para o modal)
+@app.route('/fornecedores/get_form/', defaults={'public_id': None}, methods=['GET'])
+@app.route('/fornecedores/get_form/<public_id>', methods=['GET'])
+def get_fornecedor_form(public_id):
+    fornecedor = None
+    if public_id:
+        # Busca o fornecedor se um public_id for fornecido (para edição)
+        fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
+
+    # Renderiza o template parcial do formulário, passando o objeto fornecedor (ou None)
+    # O template _form_fornecedor_content.html usará o objeto fornecedor para preencher os campos se ele existir.
+    return render_template('_form_fornecedor_content.html', fornecedor=fornecedor)
 
 @app.route('/fornecedores/<public_id>/', methods=['GET', 'POST'])
 # Rota para visualizar/editar um fornecedor existente

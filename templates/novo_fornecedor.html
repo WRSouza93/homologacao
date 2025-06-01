@@ -49,16 +49,12 @@
     }
 </style>
 {% endblock %}
-
-{% block content %}
 <h2>Cadastro de Fornecedor</h2>
 <p>Clique no botão abaixo para cadastrar um novo fornecedor utilizando o formulário modal.</p>
-
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalFornecedor" data-action="novo">
     <i class="fas fa-plus"></i> Novo Fornecedor
 </button>
 
-{% endblock %}
 
 <script>
     // Variável global para armazenar o ID do documento sendo editado
@@ -275,6 +271,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // TODO: Implementar lógica para adicionar/editar/excluir documentos na tabela via JS (não PERSISTE ainda, só visual)
     // TODO: Lógica para enviar dados do formulário principal e anexos.
 });
-</script>
-{% endblock %}
-{% endblock %}

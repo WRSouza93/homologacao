@@ -97,6 +97,12 @@ function initializeFornecedorDocumentos() {
          const formDocumento = modalDocumento.find('#formDocumento');
          const formData = new FormData(formDocumento[0]);
 
+         console.log('Conteúdo do FormData antes de enviar:');
+         for (let pair of formData.entries()) {
+             console.log(pair[0]+ ', ' + pair[1]);
+         }
+         console.log('Fim do Conteúdo do FormData');
+
          // TODO: Validar campos do modal antes de prosseguir (especialmente se ISO)
 
          // Recuperar o public_id do fornecedor do formulário principal no modal (se estivermos editando um fornecedor)

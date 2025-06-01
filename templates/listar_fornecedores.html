@@ -28,7 +28,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Fornecedores Cadastrados</h2>
-    <a href="{{ url_for('novo_fornecedor') }}" class="btn btn-success">Novo Fornecedor</a>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalFornecedor" data-action="novo">Novo Fornecedor</button>
 </div>
 
 {% if fornecedores %}
@@ -69,7 +69,7 @@
 {% else %}
 <div class="alert alert-info" role="alert">
     Nenhum fornecedor cadastrado ainda. <a href="{{ url_for('novo_fornecedor') }}" class="alert-link">Clique aqui para adicionar o primeiro fornecedor.</a>
-</div>
+</div>{# TODO: Make this link also open the modal via JS #}
 {% endif %}
 {% endblock %}
 

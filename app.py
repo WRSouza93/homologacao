@@ -58,7 +58,7 @@ class DocumentoFornecedor(db.Model):
 def novo_fornecedor():
     # Redireciona GET para a lista, pois o cadastro agora é via modal
     if request.method == 'GET':
- return render_template('listar_fornecedores.html')
+        return render_template('listar_fornecedores.html')
  # O método POST para salvar/editar o fornecedor via modal será tratado em outra rota,
     # ou esta rota será refatorada para receber AJAX do modal.
     # Por enquanto, mantemos o POST aqui caso ainda esteja sendo usado em algum lugar,

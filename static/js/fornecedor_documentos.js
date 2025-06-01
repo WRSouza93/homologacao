@@ -16,7 +16,7 @@ function initializeFornecedorDocumentos() {
     const btnSalvarDocumento = modalDocumento.find('#btnSalvarDocumento');
     const listaDocumentosBody = $('#listaDocumentosBody'); // Assume que esta tabela está no formulário do fornecedor
 
-    // Referência ao botão Adicionar Documento dentro do formulário do fornecedor
+    // Referência ao botão Adicionar Documento dentro do formulário do fornecedor (usa delegation)
     const btnAdicionarDocumento = $('#btnAdicionarDocumento');
 
 
@@ -244,40 +244,36 @@ function initializeFornecedorDocumentos() {
 
      // Lógica para exclusão de documento (delegation)
      $(document).on('click', '.btn-excluir-documento', function() {
-         const documentPublicId = $(this).data('public-id');// Assume data-id tem o public_id
+         const documentPublicId = $(this).data('public-id');
          const row = $(this).closest('tr');
          const documentoNome = row.find('td:eq(1)').text(); // Nome do arquivo ou código
 
          if (confirm(`Tem certeza que deseja excluir o documento "${documentoNome}"?`)) {
+    // Enviar requisição AJAX POST para a rota de exclusão no backend
+    const deleteUrl = `/documentos/${documentPublicId}/excluir`;
     $.ajax({
-        url: `/documentos/${documentPublicId}/excluir`,
+        url: deleteUrl,
         method: 'POST',
         success: function (response) {
             if (response.success) {
                 row.remove();
-                if ($('#listaDocumentosBodyModal').children().length === 0) {
-                    $('#listaDocumentosBodyModal').html('<tr><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
+                // Verifique se a tabela está vazia e adicione a mensagem se necessário
+                const tabelaDocumentosBody = row.closest('tbody'); // Encontre o tbody pai da linha removida
+                if (tabelaDocumentosBody.children('tr:not(.no-documents-row)').length === 0) {
+                     tabelaDocumentosBody.html('<tr class="no-documents-row"><td colspan="8" class="text-center text-muted">Nenhum documento anexado ainda.</td></tr>');
                 }
                 alert(response.message || 'Documento excluído com sucesso!');
             } else {
                 alert('Erro ao excluir documento: ' + (response.message || 'Erro desconhecido'));
             }
         },
-        error: function () {
-            alert('Erro de comunicação ao excluir documento.');
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Erro AJAX ao excluir documento:", textStatus, errorThrown, jqXHR.responseText);
+            alert('Erro de comunicação ao excluir documento: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : errorThrown));
         }
     });
 }
 
-     });
-
-     // TODO: Função para formatar data de dd/mm/yyyy para yyyy-mm-dd para preencher input type="date" na edição
-     // function formatarDataParaInput(dataString) { ... }
-
-
-    // Esta função pode ser chamada depois que o formulário do fornecedor for carregado no modal principal
-    // para re-inicializar os listeners e UI do modal de documentos.
-    console.log("initializeFornecedorDocumentos executada.");
 }
 
 // A função initializeFornecedorDocumentos será chamada do script que carrega o formulário

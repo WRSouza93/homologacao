@@ -198,24 +198,28 @@ def editar_documento(public_id):
     print(f"Método POST recebido em /documentos/{public_id}/editar")
     return jsonify({'message': 'Lógica de edição de documento aqui'}), 200
 
-@app.route('/documentos/<public_id>/excluir', methods=['POST'])
-@app.route('/documentos/<public_id>/excluir', methods=['POST'])
 def excluir_documento(public_id):
+    """Rota para excluir um documento de fornecedor."""
     try:
         documento = DocumentoFornecedor.query.filter_by(public_id=public_id).first_or_404()
-
-        # Apagar arquivo físico
+        
+        # Excluir arquivo físico
         caminho_absoluto = os.path.join(app.config['UPLOAD_FOLDER'], documento.caminho_arquivo)
-        if os.path.exists(caminho_absoluto):
-            os.remove(caminho_absoluto)
-
+        try:
+            if os.path.exists(caminho_absoluto):
+                os.remove(caminho_absoluto)
+        except FileNotFoundError:
+            # Ignora se o arquivo já não existir
+            pass
+            
+        # Excluir registro do banco de dados
         db.session.delete(documento)
-        db.session.commit()
-
+        db.commit()
+        
         return jsonify({'success': True, 'message': 'Documento excluído com sucesso!'})
-
+        
     except Exception as e:
-        db.session.rollback()
+        db.rollback()
         return jsonify({'success': False, 'message': f'Erro ao excluir documento: {str(e)}'}), 500
 
 

@@ -59,6 +59,7 @@ $(document).ready(function () {
                 // Pode ser necessário chamar uma função de inicialização aqui.
 
  console.log('Formulário carregado com sucesso.'); // Debug: Sucesso
+                initializeFornecedorDocumentos(); // Chama a função de inicialização de documentos
  btnSalvar.prop('disabled', false); // Garante que o botão Salvar está habilitado após sucesso
             },
             error: function (jqXHR, textStatus, errorThrown) {

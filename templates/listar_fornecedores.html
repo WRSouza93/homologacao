@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Fornecedores - Sistema de Homologação{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
+<style>
+    #fornecedoresTable .actions-col {
+        white-space: nowrap;
+    }
+
+    #fornecedoresTable .actions-col .btn {
+        margin: 0 2px;
+    }
+
+    /* Estilos para os controles do DataTable (filtros, paginação) */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Fornecedores Cadastrados</h2>
+    <a href="{{ url_for('novo_fornecedor') }}" class="btn btn-success">Novo Fornecedor</a>
+</div>
+
+{% if fornecedores %}
+<div class="table-responsive">
+    <table id="fornecedoresTable" class="table table-hover table-striped table-bordered" style="width:100%">
+        <thead class="thead-dark">
+            <tr>
+                <th>Nome Fantasia / Razão Social</th>
+                <th>E-mail</th>
+                <th>Cidade/Estado</th>
+                <th>CNPJ</th>
+                <th>Certificado ISO?</th>
+                <th class="actions-col no-sort">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fornecedor in fornecedores %}
+            <tr>
+                <td>{{ fornecedor.nome_fantasia or fornecedor.razao_social }}</td>
+                <td>{{ fornecedor.email or '-' }}</td>
+                <td>{{ fornecedor.endereco or '-' }} {# Placeholder: Exibe endereço completo #}</td>
+                <td>{{ fornecedor.cnpj }}</td>
+                <td>Verificar Documentos {# Placeholder: Lógica de verificação virá depois #}</td>
+                <td class="actions-col text-center">
+                    {# Placeholder links para edição e exclusão #}
+                    <a href="{{ url_for('editar_fornecedor', public_id=fornecedor.public_id) }}" class="btn btn-warning btn-sm" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="btn btn-danger btn-sm" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Nenhum fornecedor cadastrado ainda. <a href="{{ url_for('novo_fornecedor') }}" class="alert-link">Clique aqui para adicionar o primeiro fornecedor.</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts_extra %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Inicializa o DataTable
+        $('#fornecedoresTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/pt-BR.json" // Configura a linguagem para português
+            },
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]], // Opções de quantidade de linhas por página
+            pageLength: 10, // Quantidade de linhas padrão
+            paging: true, // Habilita paginação
+            lengthChange: true, // Habilita mudança de quantidade de linhas
+            searching: true, // Habilita busca
+            ordering: true, // Habilita ordenação
+            info: true, // Habilita informações de paginação
+            autoWidth: false, // Desabilita auto ajuste de largura das colunas
+            responsive: true, // Tenta ajustar a tabela para telas menores (pode exigir mais CSS)
+            columnDefs: [
+                { orderable: false, targets: 'no-sort' } // Desabilita ordenação na coluna com a classe 'no-sort'
+            ]
+        });
+    });
+</script>
+{% endblock %}

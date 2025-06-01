@@ -58,21 +58,34 @@ class DocumentoFornecedor(db.Model):
 def novo_fornecedor():
     if request.method == 'POST':
         try:
-            # Esta parte será implementada completamente mais tarde,
-            # com a manipulação dos dados do formulário e uploads.
-            # Por enquanto, apenas um placeholder para o POST.
-            print("Método POST recebido em /novo_fornecedor")
-            flash('Fornecedor cadastrado com sucesso! (Placeholder)', 'success')
-            # return redirect(url_for('listar_fornecedores')) # Redirecionar para uma lista após o cadastro
-            return redirect(url_for('index')) # Redirecionar para a página inicial por enquanto
+            novo_fornecedor = Fornecedor(
+                cnpj=request.form['cnpj'],
+                razao_social=request.form['razao_social'],
+                nome_fantasia=request.form.get('nome_fantasia'), # Use get para campos opcionais
+                email=request.form.get('email'),
+                telefone=request.form.get('telefone'),
+                endereco=request.form.get('endereco'),
+                tipo=request.form['tipo'],
+                status=request.form.get('status') == 'True' # Assume value="True" no HTML checkbox
+            )
+
+            db.session.add(novo_fornecedor)
+            db.session.commit()
+            flash('Fornecedor cadastrado com sucesso!', 'success')
+            return redirect(url_for('listar_fornecedores'))
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao cadastrar fornecedor: {e}', 'danger')
-            # Renderizar o formulário novamente com os dados preenchidos em caso de erro
-            # return render_template('novo_fornecedor.html', fornecedor=request.form)
+            return render_template('novo_fornecedor.html', form_data=request.form) # Passar dados para preencher o formulário
 
     return render_template('novo_fornecedor.html')
 
+@app.route('/listar_fornecedores')
+def listar_fornecedores():
+    fornecedores = Fornecedor.query.all()
+    return render_template('listar_fornecedores.html', fornecedores=fornecedores)
+
+# Rota para visualizar/editar um fornecedor existente
 def visualizar_fornecedor(public_id):
     fornecedor = Fornecedor.query.filter_by(public_id=public_id).first_or_404()
 

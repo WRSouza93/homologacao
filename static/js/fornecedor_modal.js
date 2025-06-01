@@ -20,7 +20,7 @@ $(document).ready(function () {
         if (action === 'novo') {
             modalTitle.text('Novo Fornecedor');
             btnSalvar.text('Cadastrar');
-            formUrl = '/fornecedores/get_form/'; // Rota para formulário vazio
+            formUrl = '/novo_fornecedor'; // Rota para formulário vazio
         } else if (action === 'editar') {
             modalTitle.text('Editar Fornecedor');
             btnSalvar.text('Salvar Alterações');

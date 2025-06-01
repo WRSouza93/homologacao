@@ -56,15 +56,11 @@ class DocumentoFornecedor(db.Model):
 
 @app.route('/novo_fornecedor', methods=['GET', 'POST'])
 def novo_fornecedor():
-    # Redireciona GET para a lista, pois o cadastro agora é via modal
+ # No método GET, esta rota agora serve o HTML do formulário parcial para ser carregado via AJAX no modal
     if request.method == 'GET':
-        return render_template('listar_fornecedores.html')
- # O método POST para salvar/editar o fornecedor via modal será tratado em outra rota,
-    # ou esta rota será refatorada para receber AJAX do modal.
-    # Por enquanto, mantemos o POST aqui caso ainda esteja sendo usado em algum lugar,
-    # mas o fluxo principal de cadastro/edição será via modal e AJAX.
-    pass # Lógica de POST será ajustada/movida
+        return render_template('_form_fornecedor_content.html', fornecedor=None) # Para o caso "novo", passamos None
 
+# O método POST para salvar/editar o fornecedor via modal será tratado em outra rota ou nesta rota refatorada.
 @app.route('/listar_fornecedores')
 def listar_fornecedores():
     fornecedores = Fornecedor.query.all()
@@ -72,7 +68,8 @@ def listar_fornecedores():
 
 # Nova rota para servir o conteúdo do formulário (para o modal)
 @app.route('/fornecedores/get_form/', defaults={'public_id': None}, methods=['GET'])
-@app.route('/fornecedores/get_form/<public_id>', methods=['GET'])
+# Adicionado a barra final na rota com public_id para corresponder ao JavaScript
+@app.route('/fornecedores/get_form/<public_id>/', methods=['GET'])
 def get_fornecedor_form(public_id=None): # Torna public_id explicitamente opcional
     try:
         print(f"Recebida requisição para /fornecedores/get_form/ com public_id: {public_id}")
